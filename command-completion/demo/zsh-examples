@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+# simple argument list
+_cmd() {
+  local args=(arg1 arg2 arg3)
+
+  _describe 'cmd' args
+}
+
+compdef _cmd cmd
+
+# multiple layers
+_layer() {
+  local prev args
+
+  # set state to 'level<n>' for argument <n>
+  _arguments \
+    '1: :->level1' \
+    '2: :->level2'
+
+  case $state in
+  level1)
+    # layer one is a simple list
+    args=(a b)
+    ;;
+  level2)
+    prev=${words[2]}
+    # layer two depends on the previous argument
+    case $prev in
+    a)
+      args=(a1 a2 a3)
+      ;;
+    b)
+      args=(b1 b2)
+      ;;
+    esac
+    ;;
+  esac
+
+  if [ ${#args} -gt 0 ]; then
+    _describe 'layer' args
+  fi
+}
+
+compdef _layer layer
+
+_map() {
+  # proposed text below the command
+  display=(a b c)
+  # values used for the command
+  values=(long/path/to/a long/path/to/b long/path/to/c)
+
+  _describe 'map' display values
+}
+
+compdef _map map

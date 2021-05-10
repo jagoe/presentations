@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+
+# This script provides a command to quickly switch or disable a session-only kubectl context (including namespace).
+# Prompt exhancement and command completion (both for zsh) are included.
+# Usually, the prompt enhancement, the completion and the script itself would be in different files but since
+# all of those have to be sourced anyway, this works as well.
+# Usage: add `source </path/to/>ctx` to your .zshrc
+
+### ctx
+### Quickly switch to and between kubectl contexts, or turn them off again.
+### The active context is only valid in the current shell session, unless you copy environment variables to another
+### shell.
+###
+### Usage:
+###
+### ctx [<context>] [<namespace>]
+### 1. Calling the script without arguments unsets the context.
+### 2. Providing <context> will switch to the kubectl context with that name.
+### 2. Providing <namespace> will switch to the k8s namespace with that name in the provided context.
+###
+### Environment variables:
+### DEBUG: set -x to show trace
+ctx() {
+  ${DEBUG-false} && set -x
+
+  _ctx-off
+  [ ! -v 1 ] && return
+
+  ! kubectl config get-contexts -o name | grep -q "$1" && echo "Unknown context: $1" && return 1
+
+  export KUBECTL_CONTEXT=$1
+  export KUBECTL_NAMESPACE=${2}
+
+  kubectl config unset current-context 1>/dev/null
+}
+
+# unset kubectl context
+_ctx-off() {
+  unset KUBECTL_CONTEXT
+  unset KUBECTL_NAMESPACE
+  kubectl config unset current-context 1>/dev/null
+}
+
+# wrap kubectl to use local context variable - the same pattern can be used for other tools, such as helm
+kubectl() {
+  # this is a bit ugly, but variable substitution caused some weird issues
+  if [[ ! -v KUBECTL_CONTEXT ]]; then
+    /usr/bin/env kubectl "$@"
+
+    return
+  fi
+
+  if [[ ! -v KUBECTL_NAMESPACE ]]; then
+    /usr/bin/env kubectl --context "$KUBECTL_CONTEXT" "$@"
+  else
+    /usr/bin/env kubectl --context "$KUBECTL_CONTEXT" --namespace "$KUBECTL_NAMESPACE" "$@"
+  fi
+}
+
+# kubectl info prompt for zsh
+_kubectl_prompt_info() {
+  current_context="${KUBECTL_CONTEXT-$(kubectl config current-context 2>/dev/null)}"
+  if [ "$current_context" = "" ]; then
+    echo -n ""
+    return
+  fi
+
+  # strip anything past the first '_' - if that part is important for you, feel free to remove this case
+  if [[ "$current_context" =~ ^gke[_-] ]]; then
+    current_context=${current_context##*_}
+  fi
+
+  # if the namespace is not set or 'default', don't display it
+  if [ "$KUBECTL_NAMESPACE" != "" ] && [ "$KUBECTL_NAMESPACE" != "default" ]; then
+    namespace="%{$fg_bold[blue]%}:%{$fg[red]%}$KUBECTL_NAMESPACE"
+  fi
+
+  echo -n "%{$fg_bold[blue]%}kubectl:(%{$fg[red]%}${current_context}${namespace-}%{$fg[blue]%})%{$reset_color%} "
+}
+
+# use kubectl info prompt
+PS1="${PS1}\$(_kubectl_prompt_info)"
+
+# zsh command completion
+# context completion
+_complete_ctx() {
+  local -a contexts
+  while IFS='' read -r line; do contexts+=("$line"); done < <(kubectl config get-contexts -o name)
+  local -a clean_contexts=()
+
+  # as above, if the '_' is important for you, feel free to remove this and any reference to 'clean_contexts'
+  for c in $contexts; do
+    clean_contexts+=("${c##*_}")
+  done
+
+  _describe -t contexts 'Contexts' clean_contexts contexts
+}
+
+# namespace completion
+_complete_namespace_() {
+  context=$1
+  local -a namespaces
+  # for avenga, we leverage rancher2 to list the namespaces - alternatively you can request permission to list
+  # namespaces and remove this case
+  if [[ "$context" = "avenga-public" ]]; then
+    while IFS='' read -r line; do namespaces+=("$line"); done < <(rancher2 namespaces ls --all-namespaces --format '{{.Namespace.Name}}')
+  else
+    # this requires for you to be able to list namespaces in the cluster
+    while IFS='' read -r line; do namespaces+=("$line"); done < <(kubectl --context "$1" get namespace -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}{end}')
+  fi
+
+  _describe -t namespaces 'Namespaces' namespaces
+}
+
+_complete_ctx_select() {
+  _arguments \
+    '1: :->context' \
+    '2: :->namespace'
+  case $state in
+  context)
+    _complete_ctx
+    ;;
+  namespace)
+    _complete_namespace_ "${words[2]}"
+    ;;
+  esac
+}
+
+compdef _complete_ctx_select ctx

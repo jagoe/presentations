@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+# simple argument list
+complete -W "arg1 arg2 arg3" cmd
+
+# multiple layers
+_layers() {
+  local prev cur opts
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD - 1]}
+
+  # layer 0 - print the first layer of arguments
+  if [ $COMP_CWORD -eq 1 ]; then
+    opts="a b"
+  # layer 1 - print the correct arguments for each previous argument
+  elif [ $COMP_CWORD -eq 2 ]; then
+    case $prev in
+    a)
+      opts="a1 a2 a3"
+      ;;
+    b)
+      opts="b1 b2"
+      ;;
+    esac
+  fi
+
+  COMPREPLY=($(compgen -W "$opts" -- $cur))
+}
+
+complete -F _layers layer
