@@ -7,10 +7,6 @@
   "author": "Jakob Göbel",
   "license": "MIT",
   "scripts": {
-    "build": "npx reveal-md ./slides.md --static",
     "present": "npx reveal-md ./slides.md -w"
-  },
-  "devDependencies": {
-    "reveal-md": "^5.1.0"
   }
 }

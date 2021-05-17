@@ -3,13 +3,9 @@
   "version": "1.0.0",
   "description": "A short introduction to kubernetes",
   "scripts": {
-    "build": "npx reveal-md ./slides.md --static",
     "start": "npx reveal-md ./slides.md -w"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jagoe/k8s-intro.git"
-  },
+  "repository": "https://jagoe.github.io/presentations/k8s-intro",
   "keywords": [
     "introduction",
     "k8s",
@@ -19,12 +15,5 @@
     "talk"
   ],
   "author": "Jakob Göbel",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/jagoe/k8s-intro/issues"
-  },
-  "homepage": "https://github.com/jagoe/k8s-intro#readme",
-  "dependencies": {
-    "reveal-md": "^4.3.0"
-  }
+  "license": "MIT"
 }
