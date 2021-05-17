@@ -18,15 +18,13 @@ jobs:
           node-version: 14
       - name: Build all presentations
         run: |
-          for f in $(pwd)/*/package.json; do
-            dir="${f%/*}"
-            name="${dir##*/}"
-            yarn --cwd "$dir" && yarn --cwd "$dir" build "$(pwd)/static/$name"
-          done
-      - name: Copy index
-        run: |
-          cp index.html "$(pwd)/static/"
+          yarn
+          yarn reveal-md "$(pwd)" --static
       - name: Publish
         run: |
-          yarn add -D gh-pages
-          yarn gh-pages -d "$(pwd)/static"
+          git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          git config user.name "github-actions-bot"
+          git config user.email "support+actions@github.com"
+          yarn gh-pages -d "$(pwd)/_static" -u "github-actions-bot <support+actions@github.com>"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
