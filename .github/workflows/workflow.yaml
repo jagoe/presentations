@@ -18,7 +18,7 @@ jobs:
           node-version: 14
       - name: Build all presentations
         run: |
-          for f in "./*/package.json"; do
+          for f in $(pwd)/*/package.json; do
             dir="${f%/*}"
             yarn --cwd "$dir" && yarn --cwd "$dir" build
           done
