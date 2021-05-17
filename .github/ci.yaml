@@ -28,9 +28,9 @@ jobs:
           cp index.html "$(pwd)/static/"
       - name: Publish
         run: |
-          echo $GITHUB_TOKEN
           yarn add -D gh-pages
           git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          echo git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
           yarn gh-pages -d "$(pwd)/static" -u "github-actions-bot <support+actions@github.com>"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
