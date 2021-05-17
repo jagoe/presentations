@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  - push
+    # branches:
+    #   - main
+
+jobs:
+  Publish-Presentations:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Use Node.js 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - name: Build all presentations
+        run: |
+          for f in $(pwd)/*/package.json; do
+            dir="${f%/*}"
+            name="${dir##*/}"
+            yarn --cwd "$dir" && yarn --cwd "$dir" build "$(pwd)/static/$name"
+          done
+      - name: Copy index
+        run: |
+          cp index.html "$(pwd)/static/"
+      - name: Publish
+        run: |
+          yarn add -D gh-pages
+          yarn gh-pages -d "$(pwd)/static"
