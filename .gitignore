@@ -1,2 +1,7 @@
+# deps
 **/node_modules
+
+# builds
 **/_static
+static/*
+!static/index.html

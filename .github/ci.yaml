@@ -30,7 +30,8 @@ jobs:
         run: |
           yarn add -D gh-pages
           git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-          echo git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          git config user.name "github-actions-bot"
+          git config user.email "support+actions@github.com"
           yarn gh-pages -d "$(pwd)/static" -u "github-actions-bot <support+actions@github.com>"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
