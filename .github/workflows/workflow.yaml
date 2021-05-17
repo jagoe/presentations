@@ -1,0 +1,17 @@
+name: CI
+on:
+  push:
+    # branches:
+    #   - main
+jobs:
+  Build-Presentations:
+    runs-on: node:14-alpine
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Build all presentations
+        run: |
+          for f in "${{ github.workspace }}/*/package.json"; do
+            dir="${f%/*}"
+            yarn --cwd "$dir" && yarn --cwd "$dir" build
+          done
