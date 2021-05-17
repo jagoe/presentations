@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A short introduction to kubernetes",
   "scripts": {
+    "build": "npx reveal-md ./slides.md --static",
     "start": "npx reveal-md ./slides.md -w"
   },
   "repository": {
