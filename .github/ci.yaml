@@ -29,4 +29,7 @@ jobs:
       - name: Publish
         run: |
           yarn add -D gh-pages
-          yarn gh-pages -d "$(pwd)/static"
+          git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          yarn gh-pages -d "$(pwd)/static" -u "github-actions-bot <support+actions@github.com>"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
