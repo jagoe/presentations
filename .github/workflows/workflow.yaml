@@ -1,14 +1,21 @@
 name: CI
+
 on:
   push:
     # branches:
     #   - main
+
 jobs:
   Build-Presentations:
-    runs-on: node:14-alpine
+    runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
+      - name: Use Node.js 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
       - name: Build all presentations
         run: |
           for f in "${{ github.workspace }}/*/package.json"; do
