@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>reveal-md</title>
+    <link rel="shortcut icon" href="./favicon.ico"/>
+    <link rel="stylesheet" href="./dist/reveal.css" />
+    <link rel="stylesheet" href="./dist/theme/black.css" id="theme" />
+    <link rel="stylesheet" href="./css/highlight/zenburn.css" />
+
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides"><section  data-markdown><script type="text/template">### Jakob Göbel
+
+# Introduction to Kubernetes
+</script></section><section ><section data-markdown><script type="text/template">
+## What is k8s?
+
+> Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications.
+</script></section><section data-markdown><script type="text/template">
+## Open-source
+
+* Flagship of the CNCF
+* Evolved from Borg by Google
+* Maintained by the community
+* Huge ecosystem
+</script></section><section data-markdown><script type="text/template">
+## Automating deployment, scaling, and management
+
+* provides an abstraction of infrastructure to run applications on
+* separates infrastructure into resources for e.g. networking, computing, load-balacing, and so on
+* can be configured by applying yaml manifests
+</script></section><section data-markdown><script type="text/template">
+## Containerized applications
+
+* usually dockerized applications or services
+* can work with other container runtimes, such as rkt
+</script></section></section><section ><section data-markdown><script type="text/template">
+## The basics
+
+<aside class="notes"><ul>
+<li>basic k8s resources needed to run an application on k8s</li>
+<li>won&#39;t go into when and when not to use k8s, can be easily found in their documentation</li>
+</ul>
+</aside></script></section><section data-markdown><script type="text/template">
+## Node
+
+A physical or virtual machine capable of doing work.
+</script></section><section data-markdown><script type="text/template">
+## Cluster
+
+> A set of Nodes that run containerized applications managed by Kubernetes.
+
+<aside class="notes"><ul>
+<li>hard boundary within which communcation within your k8s instance can be seen as internal</li>
+</ul>
+</aside></script></section><section data-markdown><script type="text/template">
+## Pod
+
+> [...] a single instance of an application in Kubernetes [...] either a single container or a small number of containers
+
+<aside class="notes"><ul>
+<li>most often this wraps the docker container</li>
+<li>provides an IP, resources, running and restart mechanisms, and other settings</li>
+</ul>
+</aside></script></section><section data-markdown><script type="text/template">
+## Deployment
+
+* wraps state for a set of one or multiple pods
+* updating the deployment rolls out updates for the pods
+* wraps replica sets, which are actually used for scaling workers horizontally
+</script></section><section data-markdown><script type="text/template">
+## Service
+
+* network wrapper for a set of one or multiple pods
+* single DNS name
+* automatic load-balancing
+* does not expose to the Internet
+
+<aside class="notes"><ul>
+<li>can be used for A-B testing</li>
+<li>can also be used to introduce and test real-life impact of the application in a new language</li>
+</ul>
+</aside></script></section><section data-markdown><script type="text/template">
+## Ingress
+
+> An API object that manages external access to the services in a cluster, typically HTTP.
+</script></section></section><section  data-markdown><script type="text/template">
+## Run k8s locally
+
+* Docker Desktop
+* Minikube
+* kind
+* kubeadm
+* microk8s
+* k3s
+* actual VMs or physical machines (such as Raspberry Pis)
+
+<aside class="notes"><ul>
+<li>in my experience Minikube is most reliable regarding k8s features and cross-platform support, but can be a hassle to setup</li>
+<li>kind on the other hand is easy to setup, but lacks some rudimentary features for a full k8s experience, such as support for Ingress and storage</li>
+</ul>
+</aside></script></section><section  data-markdown><script type="text/template">
+## Demo
+</script></section><section  data-markdown><script type="text/template">
+## Sources & References
+
+* <https://kubernetes.io>
+* <https://kubernetes.io/docs/concepts/overview/components/>
+* <https://coreos.com/rkt/>
+* <https://kubernetes.io/docs/tasks/tools/install-minikube/>
+</script></section></div>
+    </div>
+
+    <script src="./dist/reveal.js"></script>
+
+    <script src="./plugin/markdown/markdown.js"></script>
+    <script src="./plugin/highlight/highlight.js"></script>
+    <script src="./plugin/zoom/zoom.js"></script>
+    <script src="./plugin/notes/notes.js"></script>
+    <script src="./plugin/math/math.js"></script>
+    <script>
+      function extend() {
+        var target = {};
+        for (var i = 0; i < arguments.length; i++) {
+          var source = arguments[i];
+          for (var key in source) {
+            if (source.hasOwnProperty(key)) {
+              target[key] = source[key];
+            }
+          }
+        }
+        return target;
+      }
+
+      // default options to init reveal.js
+      var defaultOptions = {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        plugins: [
+          RevealMarkdown,
+          RevealHighlight,
+          RevealZoom,
+          RevealNotes,
+          RevealMath
+        ]
+      };
+
+      // options from URL query string
+      var queryOptions = Reveal().getQueryHash() || {};
+
+      var options = extend(defaultOptions, {}, queryOptions);
+    </script>
+
+
+    <script>
+      Reveal.initialize(options);
+    </script>
+  </body>
+</html>

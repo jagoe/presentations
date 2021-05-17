@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>reveal-md</title>
+    <link rel="shortcut icon" href="./favicon.ico"/>
+    <link rel="stylesheet" href="./dist/reveal.css" />
+    <link rel="stylesheet" href="./dist/theme/black.css" id="theme" />
+    <link rel="stylesheet" href="./css/highlight/zenburn.css" />
+
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides"><section  data-markdown><script type="text/template">### Jakob Göbel
+
+# Introduction to `bash`/`zsh` completion
+
+<aside class="notes"><p>FYI: I won&#39;t go into shells I have not used, like <code>fish</code></p>
+</aside></script></section><section  data-markdown><script type="text/template">
+## What is command completion?
+
+<aside class="notes"><p>Show examples; kubectl, vpn, code, ctx</p>
+</aside></script></section><section ><section data-markdown><script type="text/template">
+## How can I get some?
+</script></section><section data-markdown><script type="text/template">
+### Some CLIs provide
+
+* `kubectl completion (bash/zsh/...)`
+* [One for docker-compose](https://raw.githubusercontent.com/docker/compose/1.25.5/contrib/completion/bash/docker-compose)
+</script></section><section data-markdown><script type="text/template">
+### oh-my-zsh
+
+Comes with loads of plugins for all your favorite tools\
+(zsh only, obviously)
+</script></section><section data-markdown><script type="text/template">
+### Community
+
+There are a boatload of ready-made completions already out there:
+
+* [bash](https://github.com/scop/bash-completion)
+* [zsh](https://github.com/zsh-users/zsh-completions)
+</script></section></section><section  data-markdown><script type="text/template">
+## But I can't find any for [X]!
+
+Writing completions is not that hard (for the most part).
+</script></section><section ><section data-markdown><script type="text/template">
+### Setup
+</script></section><section data-markdown><script type="text/template">
+#### `bash`
+
+No setup necessary, just source the completion scripts
+</script></section><section data-markdown><script type="text/template">
+#### `zsh`
+
+Completion needs to be enabled first\
+(already the case if you're using `oh-my-zsh`):
+
+```zsh
+autoload -U +X compinit && compinit
+```
+
+`zsh` can also handle `bash` completions:
+```zsh
+autoload -U +X bashcompinit && bashcompinit
+```
+</script></section></section><section ><section data-markdown><script type="text/template">
+### A simple list of arguments
+</script></section><section data-markdown><script type="text/template">
+#### `bash`
+
+```bash
+complete -W "arg1 arg2 arg3" cmd
+```
+</script></section><section data-markdown><script type="text/template">
+#### `zsh`
+
+```zsh
+_cmd() {
+  local args=(arg1 arg2 arg3)
+
+  _describe 'cmd' args
+}
+
+compdef _cmd cmd
+```
+</script></section></section><section ><section data-markdown><script type="text/template">
+### Multiple layers
+</script></section><section data-markdown><script type="text/template">
+#### `bash`
+
+```bash
+_layers() {
+  local prev cur opts
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD - 1]}
+
+  # layer 0 - print the first layer of arguments
+  if [ $COMP_CWORD -eq 1 ]; then
+    opts="a b"
+  # layer 1 - print the correct arguments for each previous argument
+  elif [ $COMP_CWORD -eq 2 ]; then
+    case $prev in
+    a)
+      opts="a1 a2 a3"
+      ;;
+    b)
+      opts="b1 b2"
+      ;;
+    esac
+  fi
+
+  COMPREPLY=($(compgen -W "$opts" -- $cur))
+}
+
+complete -F _layers layer
+```
+</script></section><section data-markdown><script type="text/template">
+#### `zsh`
+
+```zsh
+_layer() {
+  local prev args
+
+  _arguments \
+    '1: :->level1' \
+    '2: :->level2'
+
+  case $state in
+  level1)
+    args=(a b)
+    ;;
+  level2)
+    prev=${words[2]}
+    case $prev in
+    a)
+      args=(a1 a2 a3)
+      ;;
+    b)
+      args=(b1 b2)
+      ;;
+    esac
+    ;;
+  esac
+
+  if [ ${#args} -gt 0 ]; then
+    _describe 'layer' args
+  fi
+}
+
+compdef _layer layer
+```
+</script></section></section><section ><section data-markdown><script type="text/template">
+### Input mapping
+</script></section><section data-markdown><script type="text/template">
+#### `bash`
+
+Not supported*, though prefixes and suffixes are possible
+
+<sub style="font-size: .2em">* to my knowledge and within the available time</sub>
+</script></section><section data-markdown><script type="text/template">
+#### `zsh`
+
+```zsh
+_map() {
+  display=(a b c)
+  values=(long/path/to/a long/path/to/b long/path/to/c)
+
+  _describe 'map' display values
+}
+
+compdef _map map
+```
+</script></section></section><section ><section data-markdown><script type="text/template">
+## Some links
+</script></section><section data-markdown><script type="text/template">
+### Shells/Frameworks
+
+* [bash](https://www.gnu.org/software/bash/) — No explanation needed
+* [zsh](https://www.zsh.org/) — One of many `bash` alternatives, mostly for interactive use
+* [oh-my-zsh](https://ohmyz.sh/) — `zsh` configuration framework ("Oh My Zsh will not make you a 10x developer...but you may feel like one.")
+</script></section><section data-markdown><script type="text/template">
+### Ready-made completions
+
+* [The bash-completion project](https://github.com/scop/bash-completion) — Lots of existing completions for `bash`
+* [The zsh-completions project](https://github.com/zsh-users/zsh-completions) — Lots of existing completions for `zsh`
+</script></section><section data-markdown><script type="text/template">
+### DIY
+
+* [`bash` Programmable Completion Builtins](https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion-Builtins.html) with [example](https://www.gnu.org/software/bash/manual/html_node/A-Programmable-Completion-Example.html) — A fun read
+* [`zsh` Completion System](http://zsh.sourceforge.net/Doc/Release/Completion-System.html#Completion-System) — More fun!
+* [A `zsh` Completion Introduction](https://mads-hartmann.com/2017/08/06/writing-zsh-completion-scripts.html) — Actually readable
+</script></section></section></div>
+    </div>
+
+    <script src="./dist/reveal.js"></script>
+
+    <script src="./plugin/markdown/markdown.js"></script>
+    <script src="./plugin/highlight/highlight.js"></script>
+    <script src="./plugin/zoom/zoom.js"></script>
+    <script src="./plugin/notes/notes.js"></script>
+    <script src="./plugin/math/math.js"></script>
+    <script>
+      function extend() {
+        var target = {};
+        for (var i = 0; i < arguments.length; i++) {
+          var source = arguments[i];
+          for (var key in source) {
+            if (source.hasOwnProperty(key)) {
+              target[key] = source[key];
+            }
+          }
+        }
+        return target;
+      }
+
+      // default options to init reveal.js
+      var defaultOptions = {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        plugins: [
+          RevealMarkdown,
+          RevealHighlight,
+          RevealZoom,
+          RevealNotes,
+          RevealMath
+        ]
+      };
+
+      // options from URL query string
+      var queryOptions = Reveal().getQueryHash() || {};
+
+      var options = extend(defaultOptions, {"controls":true,"progress":true}, queryOptions);
+    </script>
+
+
+    <script>
+      Reveal.initialize(options);
+    </script>
+  </body>
+</html>
