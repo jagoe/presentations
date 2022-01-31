@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>reveal-md</title>
+    <link rel="shortcut icon" href="./../favicon.ico"/>
+    <link rel="stylesheet" href="./../dist/reveal.css" />
+    <link rel="stylesheet" href="./../dist/theme/black.css" id="theme" />
+    <link rel="stylesheet" href="./../css/highlight/zenburn.css" />
+
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides"><section  data-markdown><script type="text/template">Ever tried building a CLI using NodeJS?
+<p class="fragment">Want it to look nice?</p>
+<p class="fragment">You're familiar with React?</p>
+</script></section><section  data-markdown><script type="text/template">
+![Ink](./assets/ink-logo.png)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;![Pastel](assets/pastel-logo.png)
+
+### React-powered NodeJS CLI
+</script></section><section  data-markdown><script type="text/template">
+## Demo
+
+<aside class="notes"><p><code>cli --help</code>
+Somewhat complex CLI; the executable accepts command-less arguments, there are two sub-commands; everything is documented
+Let&#39;s take a look at the <code>download</code> command
+<code>cli download https://google.com https://trtl.dev</code>
+Updating percentage display</p>
+</aside></script></section><section ><section data-markdown><script type="text/template">
+## ![Ink](./assets/ink-logo.png)
+
+Ink provides React for NodeJS.
+</script></section><section data-markdown><script type="text/template">
+## Ink
+
+```javascript
+import React from 'react'
+import PropTypes from 'prop-types'
+import {Text} from 'ink'
+
+/// Add an arbitrary amount of numbers
+const add = ({inputArgs}) => (
+  <Text>
+    {inputArgs
+      .map((arg) => Number.parseFloat(arg))
+      .filter((n) => !Number.isNaN(n))
+      .reduce((sum, n) => sum + n, 0)}
+  </Text>
+)
+
+add.propTypes = {
+  /// The numbers you want to add
+  inputArgs: PropTypes.array.isRequired,
+}
+
+export default add
+```
+
+<aside class="notes"><p>A command is a React component thanks to <code>Ink</code>
+Some limitations as to which components and hooks are available: <a href="https://github.com/vadimdemedes/ink#contents">https://github.com/vadimdemedes/ink#contents</a>
+Special metadata can be supplied by setting special properties (used by Pastel)</p>
+</aside></script></section><section data-markdown><script type="text/template">
+## Ink
+
+```typescript
+import * as React from 'react'
+import {useState, useEffect} from 'react'
+import * as PropTypes from 'prop-types'
+import {Text} from 'ink'
+
+/// Download an arbitrary amount of URLs
+const download = ({urls}: {urls: string[]}) => {
+  if (!urls?.length) {
+    return <Text color="yellow">No URLs to download.</Text>
+  }
+
+  const [percentage, setPercentage] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPercentage((old) => {
+        if (percentage >= 100) {
+          clearInterval(timer)
+
+          return old
+        }
+
+        return old + 1
+      })
+    }, 25)
+
+    return () => {
+      clearInterval(timer)
+    }
+  })
+
+  return (
+    <Text>
+      Downloading {urls.length} URLs... <Text color="blue">{percentage}%</Text>
+    </Text>
+  )
+}
+
+download.propTypes = {
+  /// The URLs you want to download
+  urls: PropTypes.array,
+}
+
+download.positionalArgs = ['urls']
+
+export default download
+```
+
+<aside class="notes"><p>Effects can be used as usual</p>
+</aside></script></section></section><section ><section data-markdown><script type="text/template">
+## ![Pastel](assets/pastel-logo.png)
+
+We used `Ink`, `PropTypes` and `mixed JS/TS` to write the commands.
+<p class="fragment">But <code>Pastel</code> builds the actual software using some conventions.</p>
+</script></section><section data-markdown><script type="text/template">
+## Pastel
+
+* Looks for commands in the `commands` directory
+* Uses comments for descriptions
+* Uses metadata (`propTypes`, `positionalArgs`, etc.) to define and validate arguments
+</script></section><section data-markdown><script type="text/template">
+## Pastel
+
+```javascript
+import React from 'react'
+import PropTypes from 'prop-types'
+import {Text} from 'ink'
+
+/// The hello command
+const hello = ({firstName, lastName}) => (
+  <Text>
+    Hello, {firstName} {lastName}
+  </Text>
+)
+
+hello.propTypes = {
+  /// The first name
+  firstName: PropTypes.string.isRequired,
+  /// The last name
+  lastName: PropTypes.string,
+}
+
+hello.positionalArgs = ['firstName']
+
+hello.defaultProps = {
+  lastName: 'Doe',
+}
+
+hello.shortFlags = {
+  lastName: 'n',
+}
+
+hello.aliases = {
+  lastName: ['familyName', 'surname'],
+}
+
+export default hello
+```
+
+<aside class="notes"><p>More metadata options
+Comments for descriptions</p>
+</aside></script></section><section data-markdown><script type="text/template">
+## Pastel
+
+```bash
+yarn pastel dev
+```
+
+* Provides a globally accessible command to execute your CLI
+* Provides hot reload
+</script></section><section data-markdown><script type="text/template">
+## Pastel
+
+```bash
+yarn pastel build
+```
+
+* Compiles everything to JS
+* Generated output can be used to provide the CLI as NPM package
+</script></section></section><section  data-markdown><script type="text/template">
+## Links
+
+* [Ink](https://github.com/vadimdemedes/ink)
+* [Pastel](https://github.com/vadimdemedes/pastel)
+</script></section></div>
+    </div>
+
+    <script src="./../dist/reveal.js"></script>
+
+    <script src="./../plugin/markdown/markdown.js"></script>
+    <script src="./../plugin/highlight/highlight.js"></script>
+    <script src="./../plugin/zoom/zoom.js"></script>
+    <script src="./../plugin/notes/notes.js"></script>
+    <script src="./../plugin/math/math.js"></script>
+    <script>
+      function extend() {
+        var target = {};
+        for (var i = 0; i < arguments.length; i++) {
+          var source = arguments[i];
+          for (var key in source) {
+            if (source.hasOwnProperty(key)) {
+              target[key] = source[key];
+            }
+          }
+        }
+        return target;
+      }
+
+      // default options to init reveal.js
+      var defaultOptions = {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        plugins: [
+          RevealMarkdown,
+          RevealHighlight,
+          RevealZoom,
+          RevealNotes,
+          RevealMath
+        ]
+      };
+
+      // options from URL query string
+      var queryOptions = Reveal().getQueryHash() || {};
+
+      var options = extend(defaultOptions, {}, queryOptions);
+    </script>
+
+
+    <script>
+      Reveal.initialize(options);
+    </script>
+  </body>
+</html>
