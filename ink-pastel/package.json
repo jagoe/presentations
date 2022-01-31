@@ -1,0 +1,13 @@
+{
+  "name": "ink-pastel",
+  "version": "1.0.0",
+  "description": "Presentation about using Ink/Pastel to create React-powered NodeJS CLIs",
+  "main": "index.js",
+  "repository": "https://jagoe.github.io/presentations/k3s-stack",
+  "author": "Jakob Göbel",
+  "license": "MIT",
+  "scripts": {
+    "prepresent": "yarn --cwd ./demo dev &",
+    "present": "npx reveal-md ./slides.md -w"
+  }
+}
